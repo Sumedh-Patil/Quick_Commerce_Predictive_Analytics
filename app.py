@@ -7,10 +7,6 @@ Premium Streamlit application for Fast Delivery prediction.
 import streamlit as st
 import pandas as pd
 import numpy as np
-import os, sys
-
-# Ensure local imports work
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from model import load_data, get_data_summary, train_model, load_trained_model, predict_single
 from utils import (

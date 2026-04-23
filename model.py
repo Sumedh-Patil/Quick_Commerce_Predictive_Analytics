@@ -8,6 +8,7 @@ Uses RandomForestClassifier matching the original analysis parameters.
 import pandas as pd
 import numpy as np
 import os
+import tempfile
 import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -18,13 +19,18 @@ from sklearn.metrics import (
 )
 
 # ---------------------------------------------------------------------------
-# Paths
+# Paths (dynamic — works on local, Linux, and Streamlit Cloud)
 # ---------------------------------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_PATH = os.path.join(BASE_DIR, "quick_commerce_with_target.csv")
-MODEL_PATH = os.path.join(BASE_DIR, "rf_model.pkl")
-SCALER_PATH = os.path.join(BASE_DIR, "scaler.pkl")
-COLUMNS_PATH = os.path.join(BASE_DIR, "model_columns.pkl")
+DATA_PATH = os.path.join(BASE_DIR, "data", "quick_commerce_with_target.csv")
+
+# Streamlit Cloud filesystem is read-only, so persist models to temp dir
+_CACHE_DIR = os.path.join(tempfile.gettempdir(), "qc_model_cache")
+os.makedirs(_CACHE_DIR, exist_ok=True)
+
+MODEL_PATH = os.path.join(_CACHE_DIR, "rf_model.pkl")
+SCALER_PATH = os.path.join(_CACHE_DIR, "scaler.pkl")
+COLUMNS_PATH = os.path.join(_CACHE_DIR, "model_columns.pkl")
 
 
 # ---------------------------------------------------------------------------
@@ -154,7 +160,7 @@ def train_model(df, sample_size=None):
     # ROC curve data
     fpr, tpr, thresholds = roc_curve(y_test, y_proba)
 
-    # Persist
+    # Persist to temp cache
     joblib.dump(rf, MODEL_PATH)
     joblib.dump(scaler, SCALER_PATH)
     joblib.dump(list(X.columns), COLUMNS_PATH)
